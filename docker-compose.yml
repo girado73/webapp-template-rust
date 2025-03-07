@@ -1,0 +1,23 @@
+services:
+  app:
+    build:
+      context: ./app/
+    ports:
+      - "8000:8000"
+    environment:
+      - ROCKET_ADDRESS=0.0.0.0
+    networks:
+      - app-network 
+
+  web:
+    build:
+      context: ./web/
+    ports:
+      - "80:80"
+    volumes:
+      - ./web:/web
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge  
