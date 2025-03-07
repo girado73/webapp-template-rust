@@ -6,10 +6,12 @@ services:
       - "8000:8000"
     environment:
       - ROCKET_ADDRESS=0.0.0.0
-    networks:
-      - app-network 
     volumes:
       - ./app:/app
+      - cargo_cache:/usr/local/cargo/registry
+      - target_cache:/app/target
+    networks:
+      - app-network 
 
   web:
     build:
@@ -25,3 +27,7 @@ services:
 networks:
   app-network:
     driver: bridge  
+
+volumes:
+  cargo_cache:
+  target_cache:
