@@ -1,33 +1,40 @@
 services:
   app:
     build:
-      context: ./app/
+      context: ./app
+      target: dev   # Nutzt das 'dev'-Target aus deinem Dockerfile
+    volumes:
+      - ./app/src:/app/src   # Hot-reload: Source Code wird gemountet
+      - ./app/migrations:/app/migrations 
     ports:
       - "8000:8000"
     environment:
-      - ROCKET_ADDRESS=0.0.0.0
-    volumes:
-      - ./app:/app
-      - cargo_cache:/usr/local/cargo/registry
-      - target_cache:/app/target
-    networks:
-      - app-network 
+      - RUST_LOG=info
+      - DATABASE_URL=postgres://postgres:password@db:5432/postgres #must be changed on prod 
 
   web:
     build:
-      context: ./web/
-    ports:
-      - "80:80"
+      context: ./web
+      target: dev
+    depends_on:
+      - app
     volumes:
       - ./web:/web
-      - ./web/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./web/dist:/usr/share/nginx/html:ro
-    networks:
-      - app-network
-networks:
-  app-network:
-    driver: bridge  
+    ports:
+      - "80:80"
+      - "5173:5173"
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
 
 volumes:
-  cargo_cache:
-  target_cache:
+  db-data:
